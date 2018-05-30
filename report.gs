@@ -112,6 +112,7 @@ function processReports() {
         } else {
           if (totalReports[reportIndex] === undefined) totalReports[reportIndex] = 0;
           totalReports[reportIndex] += reportValue;
+          if (report.code === 'work_time' && reportValue === 0) sheet.hideRows(rowI);
           sheet.getRange(rowI, columnI++).setValue(reportValue);
         }
       } else {
@@ -135,14 +136,17 @@ function processReports() {
         value[0].forEach(function(task) {
           listUrl += 'http://redmine.zolotoykod.ru/issues/' + task.id + '\n';
         });
+        if (value[0].length === 0) sheet.hideColumns(columnI);
         sheet.getRange(rowI, columnI++).setValue(value[0].length + ' / '+ value[1].length).setNote(listUrl);
       } else {
         value.forEach(function(task) {
           listUrl += 'http://redmine.zolotoykod.ru/issues/' + task.id + '\n';
         });
+        if (value.length === 0) sheet.hideColumns(columnI);
         sheet.getRange(rowI, columnI++).setValue(value.length).setNote(listUrl);
       }
     } else {
+      if (value === 0) sheet.hideColumns(columnI);
       sheet.getRange(rowI, columnI++).setValue(Math.floor(value / OPTIONS.performers.length));
     }
   });

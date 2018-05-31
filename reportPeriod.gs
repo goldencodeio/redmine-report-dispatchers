@@ -39,6 +39,9 @@ function processPeriodReports() {
       arrSum.push(0);
     }
 
+    var countOperatorRating = 0;
+    var countWrittenTime = 0;
+
     arrSum.forEach(function(sum, i) {
       user.forEach(function(row) {
         if (typeof(row[i]) === 'string' && /\//.test(row[i])) {
@@ -46,10 +49,15 @@ function processPeriodReports() {
           arrSum[i] = arrSum[i].split('/');
           row[i] = row[i].split('/');
           arrSum[i] = (parseInt(arrSum[i][0], 10) + parseInt(row[i][0], 10)) + ' / ' + (parseInt(arrSum[i][1], 10) + parseInt(row[i][1], 10));
-        } else arrSum[i] += parseFloat(row[i]);
+        } else {
+          if (i === 0 && parseFloat(row[i]) !== 0) countWrittenTime++;
+          if (i === 5 && parseFloat(row[i]) !== 0) countOperatorRating++;
+          arrSum[i] += parseFloat(row[i]);
+        }
       });
     });
-    arrSum[1] = Math.floor(arrSum[1] / user.length);
+    arrSum[1] = countWrittenTime ? Math.floor(arrSum[1] / countWrittenTime) : 0;
+    arrSum[5] = countOperatorRating ? arrSum[5] / countOperatorRating : 0;
     return arrSum;
   });
 
@@ -63,5 +71,5 @@ function processPeriodReports() {
     });
     columnI = 2;
     rowI++;
-  });  
+  });
 }

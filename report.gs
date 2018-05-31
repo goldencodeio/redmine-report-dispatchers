@@ -10,18 +10,23 @@ var REPORT = [
     manual: false
   },
   {
-    code: 'total_tasks',
+    code: 'created_tasks',
     name: 'Задач\nзаведено',
     manual: false
   },
   {
-    code: 'total_tasks_paid_separately',
+    code: 'created_tasks_paid_separately',
     name: 'Оплачивается\nотдельно',
     manual: false
   },
   {
-    code: 'total_tasks_rate',
+    code: 'created_tasks_rate',
     name: 'Оценено\n(отзвонено)',
+    manual: false
+  },
+  {
+    code: 'operator_rating_avg',
+    name: 'Ср. Оценка\nоператора',
     manual: false
   },
   {
@@ -147,6 +152,7 @@ function processReports() {
       }
     } else {
       if (value === 0) sheet.hideColumns(columnI);
+      if (i === 5) return ++columnI;
       sheet.getRange(rowI, columnI++).setValue(Math.floor(value / OPTIONS.performers.length));
     }
   });
@@ -162,16 +168,20 @@ function getUserReport(report, user, userIndex) {
       return getWrittenTime(user, userIndex);
       break;
 
-    case 'total_tasks':
-      return getTotalTasks(user);
+    case 'created_tasks':
+      return getСreatedTasks(user);
       break;
 
-    case 'total_tasks_paid_separately':
-      return getTotalTasksPaidSeparately(user);
+    case 'created_tasks_paid_separately':
+      return getСreatedTasksPaidSeparately(user);
       break;
 
-    case 'total_tasks_rate':
-      return getTotalTasksRate(user);
+    case 'created_tasks_rate':
+      return getСreatedTasksRate(user);
+      break;
+
+    case 'operator_rating_avg':
+      return getOperatorRatingAverage(user);
       break;
 
     case 'done_tasks':
@@ -210,20 +220,20 @@ function getWrittenTime(user, i) {
   return Math.floor(100 / parseInt(OPTIONS.performersWorkHours[i], 10) * timeEntries);
 }
 
-function getTotalTasks(user) {
+function getСreatedTasks(user) {
   var res = APIRequest('issues', {query: [
     {key: 'tracker_id', value: '!5'},
-    {key: 'assigned_to_id', value: user.id},
+    {key: 'author_id', value: user.id},
     {key: 'status_id', value: '*'},
     {key: 'created_on', value: formatDate(OPTIONS.currentDate)}
   ]});
   return res.issues;
 }
 
-function getTotalTasksPaidSeparately(user) {
+function getСreatedTasksPaidSeparately(user) {
   var res = APIRequest('issues', {query: [
     {key: 'tracker_id', value: '!5'},
-    {key: 'assigned_to_id', value: user.id},
+    {key: 'author_id', value: user.id},
     {key: 'status_id', value: '*'},
     {key: 'created_on', value: formatDate(OPTIONS.currentDate)},
     {key: 'cf_24', value: 'Единовременная услуга (К оплате)'}
@@ -232,16 +242,31 @@ function getTotalTasksPaidSeparately(user) {
   return res.issues;
 }
 
-function getTotalTasksRate(user) {
+function getСreatedTasksRate(user) {
   var res = APIRequest('issues', {query: [
     {key: 'tracker_id', value: '!5'},
-    {key: 'assigned_to_id', value: user.id},
+    {key: 'author_id', value: user.id},
     {key: 'status_id', value: '*'},
     {key: 'created_on', value: formatDate(OPTIONS.currentDate)},
     {key: 'cf_7', value: '*'}
   ]});
 
   return res.issues;
+}
+
+function getOperatorRatingAverage(user) {
+  var res = APIRequest('issues', {query: [
+    {key: 'tracker_id', value: '!5'},
+    {key: 'author_id', value: user.id},
+    {key: 'status_id', value: '*'},
+    {key: 'created_on', value: formatDate(OPTIONS.currentDate)},
+    {key: 'cf_27', value: '*'}
+  ]});
+
+  var sum = res.issues.reduce(function(a, c) {
+    return a + parseInt(c.custom_fields.find(function(i) {return i.id === 27}).value, 10);
+  }, 0);
+  return res.issues.length ? sum / res.issues.length : 0;
 }
 
 function getDoneTasks(user) {
@@ -281,7 +306,7 @@ function getDoneTasks(user) {
 
 function getOverdueTasks(user) {
   var overdueTasks = doneIssues.filter(function(item) {
-    if (item.due_date && (Date.parse(item.due_date) + 1000 * 60 * 60 * 24) < OPTIONS.currentDate.getTime())
+    if (item.due_date && (Date.parse(item.due_date) + 1000 * 60 * 60 * 24) <= OPTIONS.currentDate.getTime())
       return true;
   });
 

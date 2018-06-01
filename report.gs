@@ -138,11 +138,15 @@ function processReports() {
     if ((Array.isArray(value))) {
       var listUrl = '';
       if ((Array.isArray(value[0]))) {
+        if (i === 9 && value[0].length > 1) {
+          value[0] = filterUniqueArray(value[0]);
+          if (value[1].length > 1) value[1] = filterUniqueArray(value[1]);
+        }
         value[0].forEach(function(task) {
           listUrl += 'http://redmine.zolotoykod.ru/issues/' + task.id + '\n';
         });
         if (value[0].length === 0) sheet.hideColumns(columnI);
-        sheet.getRange(rowI, columnI++).setValue(value[0].length + ' / '+ value[1].length).setNote(listUrl);
+        sheet.getRange(rowI, columnI++).setValue(value[0].length + ' / ' + value[1].length).setNote(listUrl);
       } else {
         value.forEach(function(task) {
           listUrl += 'http://redmine.zolotoykod.ru/issues/' + task.id + '\n';

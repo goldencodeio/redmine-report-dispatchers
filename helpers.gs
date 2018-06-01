@@ -8,12 +8,19 @@ function getDateRage(startDate, finalDate) {
 
 function getDateRangeWithTime(startDate, finalDate) {
   var startDate = startDate.toJSON().split('.').shift() + 'Z';
-  var finalDate = finalDate.toJSON().split('.').shift() + 'Z';  
+  var finalDate = finalDate.toJSON().split('.').shift() + 'Z';
   return '><' + startDate + '|' + finalDate;
 }
 
 function getHoursByRange(startDate, finalDate) {
   return (finalDate.getTime() - startDate.getTime()) / (1000 * 60 * 60);
+}
+
+function filterUniqueArray(arr) {
+  return arr.sort(function(a,b){return a.id > b.id ? 1 : -1;}).reduce(function(arr, el){
+    if(!arr.length || arr[arr.length - 1].id !== el.id) arr.push(el);
+    return arr;
+  }, []);
 }
 
 if (!Array.prototype.find) {

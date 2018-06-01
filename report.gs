@@ -298,8 +298,8 @@ function getDoneTasks(user) {
   doneIssues = filteredIssues;
 
   var filteredIssuesWithRate = filteredIssues.filter(function(item) {
-    if (item.custom_fields.find(function(i) {return i.id === 7}).value !== '')
-      return true;
+    var rate = item.custom_fields.find(function(i) {return i.id === 7});
+    if (rate && rate.value !== '') return true;
   });
   return [filteredIssues, filteredIssuesWithRate];
 }
@@ -311,8 +311,8 @@ function getOverdueTasks(user) {
   });
 
   var overdueTasksWithRate = overdueTasks.filter(function(item) {
-    if (item.custom_fields.find(function(i) {return i.id === 7}).value !== '')
-      return true;
+    var rate = item.custom_fields.find(function(i) {return i.id === 7});
+    if (rate && rate.value !== '') return true;
   });
 
   return [overdueTasks, overdueTasksWithRate];
@@ -320,13 +320,13 @@ function getOverdueTasks(user) {
 
 function getUnsubscribed(user) {
   var unsubscribed = doneIssues.filter(function(item) {
-    if (item.custom_fields.find(function(i) {return i.id === 1}).value === '')
-      return true;
+    var result = item.custom_fields.find(function(i) {return i.id === 1});
+    if (result && result.value === '') return true;
   });
 
   var unsubscribedWithRate = unsubscribed.filter(function(item) {
-    if (item.custom_fields.find(function(i) {return i.id === 7}).value !== '')
-      return true;
+    var rate = item.custom_fields.find(function(i) {return i.id === 7});
+    if (rate && rate.value !== '') return true;
   });
 
   return [unsubscribed, unsubscribedWithRate];

@@ -20,8 +20,13 @@ var REPORT = [
     manual: false
   },
   {
-    code: 'created_tasks_rate',
+    code: 'with_feedback_tasks',
     name: 'Оценено\n(отзвонено)',
+    manual: false
+  },
+  {
+    code: 'without_feedback_tasks',
+    name: 'Без обратной\nсвязи\n(отзвонено)',
     manual: false
   },
   {
@@ -31,7 +36,7 @@ var REPORT = [
   },
   {
     code: 'done_tasks',
-    name: 'Выполнено/\nОценено',
+    name: 'Решенные\nоператором/\nОценено',
     manual: false
   },
  {
@@ -121,6 +126,7 @@ function processReports() {
           sheet.getRange(rowI, columnI++).setValue(reportValue);
         }
       } else {
+        if (parseInt(OPTIONS.performersWorkHours[userIndex], 10) === 0) sheet.getRange(rowI, columnI).setValue(0);
         ss.setNamedRange('manualRange' + rowI + columnI, sheet.getRange(sheet.getRange(rowI, columnI++).getA1Notation()));
       }
     });
@@ -187,8 +193,12 @@ function getUserReport(report, user, userIndex) {
       return getСreatedTasksPaidSeparately(user);
       break;
 
-    case 'created_tasks_rate':
-      return getСreatedTasksRate(user);
+    case 'with_feedback_tasks':
+      return getWithFeedbackTasks(user);
+      break;
+
+    case 'without_feedback_tasks':
+      return getWithoutFeedbackTasks(user);
       break;
 
     case 'operator_rating_avg':
@@ -253,16 +263,35 @@ function getСreatedTasksPaidSeparately(user) {
   return res.issues;
 }
 
-function getСreatedTasksRate(user) {
+function getWithFeedbackTasks(user) {
   var res = APIRequest('issues', {query: [
     {key: 'tracker_id', value: '!5'},
-    {key: 'author_id', value: user.id},
-    {key: 'status_id', value: '*'},
-    {key: 'created_on', value: formatDate(OPTIONS.currentDate)},
-    {key: 'cf_7', value: '*'}
+    {key: 'status_id', value: 'closed'},
+    {key: 'closed_on', value: formatDate(OPTIONS.currentDate)}
   ]});
 
-  return res.issues;
+  return res.issues.filter(function(item) {
+    var userControl = item.custom_fields.find(function(i) {return i.id === 14});
+    var isWithFeedback = item.custom_fields.find(function(i) {return i.id === 34});
+    var rate = item.custom_fields.find(function(i) {return i.id === 7});
+    if (userControl && isWithFeedback && rate)
+      return (parseInt(userControl.value, 10) === user.id && isWithFeedback.value === '1' && rate.value !== '');
+  });
+}
+
+function getWithoutFeedbackTasks(user) {
+  var res = APIRequest('issues', {query: [
+    {key: 'tracker_id', value: '!5'},
+    {key: 'status_id', value: 'closed'},
+    {key: 'closed_on', value: formatDate(OPTIONS.currentDate)}
+  ]});
+
+  return res.issues.filter(function(item) {
+    var userControl = item.custom_fields.find(function(i) {return i.id === 14});
+    var isWithoutFeedback = item.custom_fields.find(function(i) {return i.id === 35});
+    if (userControl && isWithoutFeedback)
+      return (parseInt(userControl.value, 10) === user.id && isWithoutFeedback.value === '1');
+  });
 }
 
 function getOperatorRatingAverage(user) {

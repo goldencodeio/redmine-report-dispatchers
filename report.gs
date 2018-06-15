@@ -267,7 +267,10 @@ function getWithFeedbackTasks(user) {
   var res = APIRequest('issues', {query: [
     {key: 'tracker_id', value: '!5'},
     {key: 'status_id', value: 'closed'},
-    {key: 'closed_on', value: formatDate(OPTIONS.currentDate)}
+    {key: 'closed_on', value: formatDate(OPTIONS.currentDate)},
+    {key: 'cf_14', value: '*'},
+    {key: 'cf_34', value: '*'},
+    {key: 'cf_7', value: '*'}
   ]});
 
   return res.issues.filter(function(item) {
@@ -283,7 +286,9 @@ function getWithoutFeedbackTasks(user) {
   var res = APIRequest('issues', {query: [
     {key: 'tracker_id', value: '!5'},
     {key: 'status_id', value: 'closed'},
-    {key: 'closed_on', value: formatDate(OPTIONS.currentDate)}
+    {key: 'closed_on', value: formatDate(OPTIONS.currentDate)},
+    {key: 'cf_14', value: '*'},
+    {key: 'cf_35', value: '*'}
   ]});
 
   return res.issues.filter(function(item) {

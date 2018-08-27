@@ -15,6 +15,11 @@ var REPORT = [
     manual: false
   },
   {
+    code: 'created_critical_tasks',
+    name: 'Критических и\nПросроченых',
+    manual: false
+  },
+  {
     code: 'created_tasks_paid_separately',
     name: 'Оплачивается\nотдельно',
     manual: false
@@ -189,6 +194,10 @@ function getUserReport(report, user, userIndex) {
       return getСreatedTasks(user);
       break;
 
+    case 'created_critical_tasks':
+      return getСreatedCriticalTasks(user);
+      break;
+
     case 'created_tasks_paid_separately':
       return getСreatedTasksPaidSeparately(user);
       break;
@@ -248,6 +257,19 @@ function getСreatedTasks(user) {
     {key: 'status_id', value: '*'},
     {key: 'created_on', value: formatDate(OPTIONS.currentDate)}
   ]});
+  return res.issues;
+}
+
+function getСreatedCriticalTasks(user) {
+  var res = APIRequest('issues', {query: [
+    {key: 'tracker_id', value: '!5'},
+    {key: 'author_id', value: user.id},
+    {key: 'status_id', value: 'open'},
+    {key: 'priority_id', value: '5'},
+    {key: 'due_date', value: '<=' + formatDate(OPTIONS.currentDate)}
+    // {key: 'created_on', value: formatDate(OPTIONS.currentDate)}
+  ]});
+
   return res.issues;
 }
 
